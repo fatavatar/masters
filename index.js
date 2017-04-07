@@ -35,6 +35,7 @@ console.log(body.length);
 console.log(body.length);
   leaderboard = JSON.parse(body);
   var players = {};
+  var ties = {};
   for (var i = 0, len = leaderboard["player"].length; i < len; i++) {
         var jsonPlayer = leaderboard["player"][i];
 	var player = {};
@@ -43,6 +44,11 @@ console.log(body.length);
         player["thru"] = jsonPlayer["thru"].length <= 2 ? "thru " + jsonPlayer["thru"] : jsonPlayer["thru"];
         player["total"] = jsonPlayer["totalParRelative"];
         player["today"] = jsonPlayer["currentParRelative"] === "-" ? "0" : jsonPlayer["currentParRelative"];
+	if (ties[player["position"]] === undefined) {
+		ties[player["position"]] = 0;
+	}
+	ties[player["position"]]++;
+	
 	players[jsonPlayer["id"]] = player;
    }
 	
@@ -59,16 +65,24 @@ console.log(body.length);
 	for (var x = 0; x < buffer; x++) {
 		response.write(" ");
 	}
-  	response.write(player["total"] + " (" + player["today"] + ") \t" + player["position"] + " " + thru + "\n");
+  	response.write(player["total"] + " (" + player["today"] + ")  \t" + player["position"] + " " + thru + "\n");
 
 	var position = player["position"];
+	var numTies = ties[player["position"]];
 	
 	var rank = parseInt(position.replace('T', ''));
+	var player_winnings = 0
 	if (rank <= 50) {
-		winnings += purse["purse"][rank - 1];
+		for (var x = 0; x < numTies && (x + rank) < 50; x++) {
+			 
+			player_winnings += purse["purse"][rank + x - 1];
+ console.log(player["name"] + ": " + player_winnings);
+		}
+// console.log(player["name"] + ": " + winnings);
+		winnings += player_winnings/ numTies
 	}
 	}
-	response.write("Current Winnings: " + winnings);
+	response.write("Current Winnings: " + winnings.toFixed(2));
 	response.write("\n");
 	response.write("\n");
 	}
