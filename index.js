@@ -50,12 +50,12 @@ var body = "";
         for (var j = 0, len2 = jsonData['teams'][i]['Players'].length; j < len2; j++) {
         var player = players[jsonData['teams'][i]['Players'][j]];
         var thru = player["thru"] === null ? "0" : player["thru"];
-	var buffer = 20 - player["name"].length;
+	var buffer = 17 - player["name"].length;
 	response.write(player["name"]);
 	for (var x = 0; x < buffer; x++) {
 		response.write(" ");
 	}
-  	response.write(player["total"] + " (today: " + player["today"] + ")\t" + player["position"] + " thru " + thru + "\n");
+  	response.write(player["total"] + " (" + player["today"] + ")\t" + player["position"] + " thru " + thru + "\n");
 
 	var position = player["position"];
 	
