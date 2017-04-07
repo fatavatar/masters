@@ -40,9 +40,9 @@ console.log(body.length);
 	var player = {};
 	player["name"] = jsonPlayer["firstName"] + " " + jsonPlayer["lastName"];
         player["position"] = jsonPlayer["currentPosition"];
-        player["thru"] = jsonPlayer["thru"];
+        player["thru"] = jsonPlayer["thru"].length <= 2 ? "thru " + jsonPlayer["thru"] : jsonPlayer["thru"];
         player["total"] = jsonPlayer["totalParRelative"];
-        player["today"] = jsonPlayer["currentParRelative"] === null ? "0" : jsonPlayer["currentParRelative"];
+        player["today"] = jsonPlayer["currentParRelative"] === "-" ? "0" : jsonPlayer["currentParRelative"];
 	players[jsonPlayer["id"]] = player;
    }
 	
@@ -59,7 +59,7 @@ console.log(body.length);
 	for (var x = 0; x < buffer; x++) {
 		response.write(" ");
 	}
-  	response.write(player["total"] + " (" + player["today"] + ")\t" + player["position"] + " thru " + thru + "\n");
+  	response.write(player["total"] + " (" + player["today"] + ") \t" + player["position"] + " " + thru + "\n");
 
 	var position = player["position"];
 	
