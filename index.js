@@ -24,22 +24,26 @@ app.get('/', function(request, response) {
   jsonData = readJsonFileSync('./json/teams.json');
   purse = readJsonFileSync('./json/purse.json');
 var body = "";
-  http.get({ host: 'www.pgatour.com', path: '/data/r/014/2017/leaderboard-v2.json' }, function(res) { 
+  http.get({ host: 'data.pga.com', path: '/jsonp/event/R014/2017/leaderboard.json' }, function(res) { 
   res.on('data', function(chunk) {
     body += chunk;
   });
   res.on('end', function() {
+  // body = body.replace("callbackWrapper(", "");
+console.log(body.length);
+  body = body.substring(16, body.length - 2);
+console.log(body.length);
   leaderboard = JSON.parse(body);
   var players = {};
-  for (var i = 0, len = leaderboard["leaderboard"]["players"].length; i < len; i++) {
-        var jsonPlayer = leaderboard["leaderboard"]["players"][i];
+  for (var i = 0, len = leaderboard["player"].length; i < len; i++) {
+        var jsonPlayer = leaderboard["player"][i];
 	var player = {};
-	player["name"] = jsonPlayer["player_bio"]["first_name"] + " " + jsonPlayer["player_bio"]["last_name"];
-        player["position"] = jsonPlayer["current_position"];
+	player["name"] = jsonPlayer["firstName"] + " " + jsonPlayer["lastName"];
+        player["position"] = jsonPlayer["currentPosition"];
         player["thru"] = jsonPlayer["thru"];
-        player["total"] = jsonPlayer["total"];
-        player["today"] = jsonPlayer["today"] === null ? "0" : jsonPlayer["today"];
-	players[jsonPlayer["player_id"]] = player;
+        player["total"] = jsonPlayer["totalParRelative"];
+        player["today"] = jsonPlayer["currentParRelative"] === null ? "0" : jsonPlayer["currentParRelative"];
+	players[jsonPlayer["id"]] = player;
    }
 	
 
