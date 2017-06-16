@@ -74,8 +74,8 @@ function setupTeams(currentTourney, config, teams, players, ties) {
 
 			var rank = parseInt(position.replace('T', ''));
 			var player_purse = 0
-				if (rank <= 50) {
-					for (var x = 0; x < numTies && (x + rank) < 50; x++) {
+				if (rank <= 60) {
+					for (var x = 0; x < numTies && (x + rank) < 60; x++) {
 
 						player_purse += purse["purse"][rank + x - 1];
 						console.log(player["name"] + ": " + player_purse);
