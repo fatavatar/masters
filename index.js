@@ -51,12 +51,19 @@ function parseLeaderboard(leaderboard, players, ties) {
 	}
 }
 
-function setupTeams(currentTourney, teams, players, ties) {
+function setupTeams(currentTourney, config, teams, players, ties) {
 
 	console.log(currentTourney.teams.length);
 	for(var i = 0, len = currentTourney.teams.length; i < len; i++) {
 		var thisTeam = {};
-		thisTeam.winnings = 0;
+		for (var j = 0, len2 = config.teams.length; j < len2; j++) {
+			var configTeam = config.teams[j];
+			if (configTeam.Name === currentTourney.teams[i].Name) {
+				thisTeam.record = configTeam.Wins + "-" + configTeam.Loses;
+				thisTeam.winnings = configTeam.Winnings
+			}
+		}
+		thisTeam.purse = 0;
 		thisTeam.name = currentTourney.teams[i]["Name"];
 		thisTeam.players = [];
 		for (var j = 0, len2 = currentTourney.teams[i]['Players'].length; j < len2; j++) {
@@ -66,17 +73,17 @@ function setupTeams(currentTourney, teams, players, ties) {
 			var numTies = ties[player["position"]];
 
 			var rank = parseInt(position.replace('T', ''));
-			var player_winnings = 0
+			var player_purse = 0
 				if (rank <= 50) {
 					for (var x = 0; x < numTies && (x + rank) < 50; x++) {
 
-						player_winnings += purse["purse"][rank + x - 1];
-						console.log(player["name"] + ": " + player_winnings);
+						player_purse += purse["purse"][rank + x - 1];
+						console.log(player["name"] + ": " + player_purse);
 					}
-					thisTeam.winnings += player_winnings/ numTies
+					thisTeam.purse += player_purse/ numTies
 				}
 		}
-		thisTeam.winnings = (thisTeam.winnings/100.0) * currentTourney.purse;
+		thisTeam.purse = (thisTeam.purse/100.0) * currentTourney.purse;
 		teams.push(thisTeam);
 	}
 }
@@ -126,7 +133,7 @@ app.get('/', function(req, res, next) {
 				body = body.substring(16, body.length - 2);
 				leaderboard = JSON.parse(body);
 				parseLeaderboard(leaderboard, players, ties);
-				setupTeams(currentTourney, teams, players, ties);
+				setupTeams(currentTourney, config, teams, players, ties);
 				res.render('pages/index', { 
 					teams: teams 
 				});
@@ -136,7 +143,7 @@ app.get('/', function(req, res, next) {
 	}
 	else {
 		parseLeaderboard(currentTourney.leaderboard, players, ties);
-		setupTeams(currentTourney, teams, players, ties);
+		setupTeams(currentTourney, config, teams, players, ties);
 		res.render('pages/index', { 
 			teams: teams,
 			config: config

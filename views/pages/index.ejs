@@ -8,8 +8,12 @@
 <div class="container" style="margin-top: 1em;">
 <% teams.forEach(function(team) { %>
 	<div class="row">
-	<div class="col-12" style="border-bottom: 1px solid #ccc;margin-bottom:1em;">
-	<h4> <%= team.name %></h4>
+	<div class="col-8" style="border-bottom: 1px solid #ccc;margin-bottom:1em;">
+	<h4> <%= team.name %> <span style="color:#AAAAAA;"> (<%= team.record %>) </span> </h4>
+	</div>
+	
+	<div class="col-4" style="border-bottom: 1px solid #ccc;margin-bottom:1em;">
+	<em style="color:#999999;">Winnings: $<%= team.winnings %></em>
 	</div>
 	</div>
 	<% team.players.forEach(function(player)  {  %>
@@ -27,7 +31,7 @@
 	<% }); %>
 	<div class="row">
 	<div class="col-12"` style="margin-top:.5em;margin-bottom:2em;">
-	<em>Current Winnings $<%= team.winnings.toFixed(0) %></em>
+	<em style="color:#999999;">Current Purse $<%= team.purse.toFixed(0) %></em>
 	</div>
 	</div>
 	
