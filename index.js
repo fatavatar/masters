@@ -68,6 +68,7 @@ function setupTeams(currentTourney, config, teams, players, ties) {
 		thisTeam.players = [];
 		for (var j = 0, len2 = currentTourney.teams[i]['Players'].length; j < len2; j++) {
 			var player = players[currentTourney.teams[i]['Players'][j]];
+			console.log("PID = " + currentTourney.teams[i]['Players'][j]);
 			thisTeam.players.push(player);
 			var position = player["position"];
 			var numTies = ties[player["position"]];
