@@ -59,7 +59,7 @@ function setupTeams(currentTourney, config, teams, players, ties) {
 		for (var j = 0, len2 = config.teams.length; j < len2; j++) {
 			var configTeam = config.teams[j];
 			if (configTeam.Name === currentTourney.teams[i].Name) {
-				thisTeam.record = configTeam.Wins + "-" + configTeam.Loses;
+				thisTeam.record = configTeam.Wins + "-" + configTeam.Loses + "-" + configTeam.Ties;
 				thisTeam.winnings = configTeam.Winnings
 			}
 		}
