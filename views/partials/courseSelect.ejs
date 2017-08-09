@@ -1,0 +1,24 @@
+<form class="form-inline">
+<div class="row" style="margin-bottom: 20px">
+<div class="col-12">
+<div class="form-group">
+<strong><label class="form-label" style="margin-right:15px">Select Major:</label></strong>
+<select id="courseSelect" class="form-control" for="courseSelect">
+<% 
+config.tournaments.forEach(function(major) { 
+%>
+<option value="<%= major %>" <% 
+if (config.tourneyData[major].selected) { 
+%> selected <% 
+} %> > <%= config.tourneyData[major].name %></option>
+<% }); %>
+</select>
+</div>
+</div>
+</div>
+<script>
+document.getElementById("courseSelect").onchange = function(){
+	window.location.href = '/' + this.value;
+}
+</script>
+</form>

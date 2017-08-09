@@ -1,0 +1,29 @@
+{
+	"teams":[
+		{
+			"Name":"Wheeler",
+			"Players":[]
+		},
+		{
+			"Name":"Weston",
+			"Players":["28237","34046","32839"]
+		},
+		{
+			"Name":"Phillip",
+			"Players":[]
+		},
+		{
+			"Name":"John",
+			"Players":["30925","34046","32102"]
+		},
+		{
+			"Name":"Brian",
+			"Players":[]
+		},
+		{
+			"Name":"Andrew",
+			"Players":["22405","28237","33448"]
+		}
+	]
+}
+		

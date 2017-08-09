@@ -1,47 +1,47 @@
 {
-	"tournaments":["open_championship_2017", "us_open_2017", "masters_2017"],
+	"tournaments":["pga_championship_2017","open_championship_2017", "us_open_2017", "masters_2017"],
 	"teams":[
 		{
 			"Name":"Weston",
 			"Wins": 0,
-			"Loses":2,
+			"Loses":3,
 			"Ties":0,
-			"Winnings": -40
+			"Winnings": -60
 		},
 		{
 			"Name":"Wheeler",
 			"Wins": 0,
-			"Loses":2,
+			"Loses":3,
 			"Ties":0,
-			"Winnings": -40
+			"Winnings": -60
 		},
 		{
 			"Name":"Phillip",
 			"Wins": 1,
-			"Loses":1,
+			"Loses":2,
 			"Ties":0,
-			"Winnings": 60
+			"Winnings": 40
 		},
 		{
 			"Name":"John",
-			"Wins": 0,
+			"Wins": 1,
 			"Loses":1,
 			"Ties":1,
-			"Winnings": 20
+			"Winnings": 120
 		},
 		{
 			"Name":"Andrew",
 			"Wins": 0,
-			"Loses":1,
+			"Loses":2,
 			"Ties":1,
-			"Winnings": 20
+			"Winnings": 0
 		},
 		{
 			"Name":"Brian",
 			"Wins": 0,
-			"Loses":1,
+			"Loses":2,
 			"Ties":0,
-			"Winnings": -20
+			"Winnings": -40
 		}
 	]
 }

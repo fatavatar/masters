@@ -87,6 +87,16 @@ function setupTeams(currentTourney, config, teams, players, ties) {
 		thisTeam.purse = (thisTeam.purse/100.0) * currentTourney.purse;
 		teams.push(thisTeam);
 	}
+	teams.sort(function(a,b) {
+		if (a.purse < b.purse) {
+			return 1;
+		}
+		if (a.purse > b.purse) {
+			return -1;
+		}
+		return 0;
+	});
+
 }
 
 
@@ -98,28 +108,29 @@ app.use(express.static(__dirname + '/public'));
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 
-app.get('/', function(req, res, next) {
-	var tourneys = []; 
+app.get('/:tourney?', function(req, res, next) {
+	var tourneys = {} 
 	var jsondir = __dirname + "/json";
 	config = readJsonFileSync(path.join(jsondir, "config.json"));
 	purse = readJsonFileSync(path.join(jsondir, "purse.json"));
-	
-	currentTourneyName = config.tournaments[0];
-	var fromPath = path.join(jsondir, currentTourneyName);
-	currentTourney = parseJsonDirSync(fromPath);
-	
-/*
-	config.tournaments.forEach( function(file, index) {
-		var fromPath = path.join(jsondir, file);
-		stat = fs.statSync(fromPath);
-		if (stat.isDirectory()) {
-			tourneyData = parseJsonDirSync(fromPath);
-			tourneys.push(tourneyData);
-		}
+ 	console.log(req.params.tourney);
+	if (config.tournaments.indexOf(req.params.tourney) != -1) {
+		currentTourneyName = req.params.tourney;
+	}
+	else {
+		currentTourneyName = config.tournaments[0];
+	}
+        config.tournaments.forEach(function(tourney) {
+		var fromPath = path.join(jsondir, tourney);
+		tournament = parseJsonDirSync(fromPath);
+		tournament.selected = false;
+		tourneys[tourney] = tournament;
 	});
-*/
-	// console.log(JSON.stringify(tourneys));
-
+	config.tourneyData = tourneys;
+		
+	currentTourney = config.tourneyData[currentTourneyName];
+	currentTourney.selected = true;
+	
 	var players = {};
 	var ties = {};
 	var teams = []; 
@@ -136,7 +147,8 @@ app.get('/', function(req, res, next) {
 				parseLeaderboard(leaderboard, players, ties);
 				setupTeams(currentTourney, config, teams, players, ties);
 				res.render('pages/index', { 
-					teams: teams 
+					teams: teams ,
+					config: config
 				});
 			});
 
