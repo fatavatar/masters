@@ -1,6 +1,6 @@
-<form class="form-inline">
 <div class="row" style="margin-bottom: 20px">
-<div class="col-12">
+<div class="col-8">
+<form class="form-inline">
 <div class="form-group">
 <strong><label class="form-label" style="margin-right:15px">Select Major:</label></strong>
 <select id="courseSelect" class="form-control" for="courseSelect">
@@ -13,12 +13,25 @@ if (config.tourneyData[major].selected) {
 } %> > <%= config.tourneyData[major].name %></option>
 <% }); %>
 </select>
+</form>
 </div>
+</div>
+<div class="col-4 text-right" style="font-size:14px;">
+<% if (config.page !== 'teams') { 
+%> <a href="/<%= config.currentTourney.id %>">Teams</a>
+<% } else { %> Teams <% } 
+%> | <% if (config.page !== 'leaderboard') { 
+%> <a href="/leaderboard/<%= config.currentTourney.id %>">Leaderboard</a>
+<% } else { %> Leaderboard <% } 
+%> 
 </div>
 </div>
 <script>
 document.getElementById("courseSelect").onchange = function(){
-	window.location.href = '/' + this.value;
+	<% if (config.page === 'team') { %>
+		window.location.href = '/' + this.value;
+	<% } else { %>
+		window.location.href = '/leaderboard/' + this.value;
+	<% } %>
 }
 </script>
-</form>

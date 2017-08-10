@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html style="font-size:12px;">
+<head>
+  <% include ../partials/header.ejs %>
+</head>
+
+<body>
+<div class="container" style="margin-top: 1em;">
+<%- include('../partials/courseSelect', {config : config }); %>
+<% players.forEach(function(player) { %>
+	<div class="row">
+	<div class="col-5">
+		<%= player.name %>
+	</div>
+	<div class="col-3">
+		<%= player.total %> (<%= player.today %>)
+	</div>
+	<div class="col-4">
+		<%= player.position %> <%= player.thru %>
+	</div>
+	</div>
+	
+<% }); %>
+</div>
+  <% include ../partials/endincludes.ejs %>
+</body>
+</html>

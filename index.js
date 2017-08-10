@@ -33,7 +33,7 @@ function parseJsonDirSync(directory) {
 	return course;
 }
 
-function parseLeaderboard(leaderboard, players, ties) {
+function parseLeaderboardPga(leaderboard, players, playerList, ties) {
 	for (var i = 0, len = leaderboard["player"].length; i < len; i++) {
 		var jsonPlayer = leaderboard["player"][i];
 		var player = {};
@@ -48,6 +48,7 @@ function parseLeaderboard(leaderboard, players, ties) {
 		ties[player["position"]]++;
 
 		players[jsonPlayer["id"]] = player;
+		playerList.push(player);
 	}
 }
 
@@ -78,7 +79,7 @@ function setupTeams(currentTourney, config, teams, players, ties) {
 				if (rank <= 60) {
 					for (var x = 0; x < numTies && (x + rank) < 60; x++) {
 
-						player_purse += purse["purse"][rank + x - 1];
+						player_purse += config.purse[rank + x - 1];
 						console.log(player["name"] + ": " + player_purse);
 					}
 					thisTeam.purse += player_purse/ numTies
@@ -99,21 +100,13 @@ function setupTeams(currentTourney, config, teams, players, ties) {
 
 }
 
-
-app.set('port', (process.env.PORT || 5000));
-
-app.use(express.static(__dirname + '/public'));
-
-// views is directory for all template files
-app.set('views', __dirname + '/views');
-app.set('view engine', 'ejs');
-
-app.get('/:tourney?', function(req, res, next) {
+function getConfig(req) {
 	var tourneys = {} 
 	var jsondir = __dirname + "/json";
 	config = readJsonFileSync(path.join(jsondir, "config.json"));
 	purse = readJsonFileSync(path.join(jsondir, "purse.json"));
- 	console.log(req.params.tourney);
+	config.purse = purse.purse;
+
 	if (config.tournaments.indexOf(req.params.tourney) != -1) {
 		currentTourneyName = req.params.tourney;
 	}
@@ -124,16 +117,20 @@ app.get('/:tourney?', function(req, res, next) {
 		var fromPath = path.join(jsondir, tourney);
 		tournament = parseJsonDirSync(fromPath);
 		tournament.selected = false;
+		tournament.id = tourney;
 		tourneys[tourney] = tournament;
 	});
 	config.tourneyData = tourneys;
-		
-	currentTourney = config.tourneyData[currentTourneyName];
-	currentTourney.selected = true;
-	
+	config.currentTourney = config.tourneyData[currentTourneyName];
+	config.currentTourney.selected = true;
+
+	return config;
+}
+
+function getLeaderboard(tourney, callback) {
 	var players = {};
+	var playerList = [];
 	var ties = {};
-	var teams = []; 
 	if (currentTourney.leaderboard == null) {
 		var body = "";
 		http.get({ host: 'data.pga.com', path: currentTourney.leaderboardURL }, function(jres) { 
@@ -144,25 +141,53 @@ app.get('/:tourney?', function(req, res, next) {
 				// body = body.replace("callbackWrapper(", "");
 				body = body.substring(16, body.length - 2);
 				leaderboard = JSON.parse(body);
-				parseLeaderboard(leaderboard, players, ties);
-				setupTeams(currentTourney, config, teams, players, ties);
-				res.render('pages/index', { 
-					teams: teams ,
-					config: config
-				});
+				parseLeaderboardPga(leaderboard, players, playerList, ties);
+				callback(players, playerList, ties);
 			});
 
 		});
 	}
 	else {
-		parseLeaderboard(currentTourney.leaderboard, players, ties);
+		parseLeaderboardPga(currentTourney.leaderboard, players, playerList, ties);
+		callback(players, playerList, ties);
+	}
+}
+	
+
+app.set('port', (process.env.PORT || 5000));
+
+app.use(express.static(__dirname + '/public'));
+
+// views is directory for all template files
+app.set('views', __dirname + '/views');
+app.set('view engine', 'ejs');
+
+app.get('/leaderboard/:tourney?', function (req, res, next) {
+	config = getConfig(req);
+	config.page = 'leaderboard';
+	currentTourney = config.currentTourney;
+	getLeaderboard(currentTourney, function(players, playerList, ties) {
+		res.render('pages/leaderboard', {
+			players : playerList,
+			config : config 
+		});
+	});
+	
+});
+
+app.get('/:tourney?', function(req, res, next) {
+	
+	config = getConfig(req);
+	config.page = 'teams';
+	currentTourney = config.currentTourney;	
+	var teams = []; 
+	getLeaderboard(currentTourney, function(players, playerList, ties) {
 		setupTeams(currentTourney, config, teams, players, ties);
 		res.render('pages/index', { 
-			teams: teams,
+			teams: teams ,
 			config: config
 		});
-	}
-
+	});
 });
 
 
