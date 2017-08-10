@@ -28,7 +28,7 @@ if (config.tourneyData[major].selected) {
 </div>
 <script>
 document.getElementById("courseSelect").onchange = function(){
-	<% if (config.page === 'team') { %>
+	<% if (config.page === 'teams') { %>
 		window.location.href = '/' + this.value;
 	<% } else { %>
 		window.location.href = '/leaderboard/' + this.value;
