@@ -4,44 +4,44 @@
 		{
 			"Name":"Weston",
 			"Wins": 0,
-			"Loses":3,
+			"Loses":4,
 			"Ties":0,
-			"Winnings": -60
+			"Winnings": -80
 		},
 		{
 			"Name":"Wheeler",
 			"Wins": 0,
-			"Loses":3,
+			"Loses":4,
 			"Ties":0,
-			"Winnings": -60
+			"Winnings": -80
 		},
 		{
 			"Name":"Phillip",
-			"Wins": 1,
+			"Wins": 2,
 			"Loses":2,
 			"Ties":0,
-			"Winnings": 40
+			"Winnings": 140
 		},
 		{
 			"Name":"John",
 			"Wins": 1,
-			"Loses":1,
+			"Loses":2,
 			"Ties":1,
-			"Winnings": 120
+			"Winnings": 100
 		},
 		{
 			"Name":"Andrew",
 			"Wins": 0,
-			"Loses":2,
+			"Loses":3,
 			"Ties":1,
-			"Winnings": 0
+			"Winnings": -20
 		},
 		{
 			"Name":"Brian",
 			"Wins": 0,
-			"Loses":2,
+			"Loses":3,
 			"Ties":0,
-			"Winnings": -40
+			"Winnings": -60
 		}
 	]
 }
