@@ -252,7 +252,7 @@ getTourney = function(req, res, next) {
 }
 
 
-app.get('tourney/:tourney?', getTourney);
+app.get('/tourney/:tourney?', getTourney);
 app.get('/:tourney?', getTourney);
 
 app.listen(app.get('port'), function() {
