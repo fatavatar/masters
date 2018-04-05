@@ -18,7 +18,7 @@ if (config.tourneyData[major].selected) {
 </div>
 <div class="col-6 text-right" style="font-size:14px;">
 <% if (config.page !== 'teams') { 
-%> <a href="/<%= config.currentTourney.id %>">Teams</a>
+%> <a href="/tourney/<%= config.currentTourney.id %>">Teams</a>
 <% } else { %> Teams <% } 
 %> | <% if (config.page !== 'leaderboard') { 
 %> <a href="/leaderboard/<%= config.currentTourney.id %>">Leaderboard</a>
@@ -29,7 +29,7 @@ if (config.tourneyData[major].selected) {
 <script>
 document.getElementById("courseSelect").onchange = function(){
 	<% if (config.page === 'teams') { %>
-		window.location.href = '/' + this.value;
+		window.location.href = '/tourney/' + this.value;
 	<% } else { %>
 		window.location.href = '/leaderboard/' + this.value;
 	<% } %>
