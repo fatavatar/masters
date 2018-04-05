@@ -7,7 +7,7 @@ var http = require('http');
 
 // app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')))
 
-function mkDirByPathSync(targetDir, {isRelativeToScript = false} = {}) {
+function mkDirByPathSync(targetDir, isRelativeToScript) {
   const sep = path.sep;
   const initDir = path.isAbsolute(targetDir) ? sep : '';
   const baseDir = isRelativeToScript ? __dirname : '.';
@@ -169,7 +169,7 @@ function archiveIfNeededPga(tourney, leaderboard) {
     var jsondir = "/tmp/json";
     var toPath = path.join(jsondir, tourney);
     if (!fs.existsSync(toPath)){
-        mkDirByPathSync(toPath);
+        mkDirByPathSync(toPath, false);
     }
 
     toPath = path.join(toPath, "leaderboard.json");
