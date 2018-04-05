@@ -1,5 +1,5 @@
 {
-	"tournaments":["pga_championship_2017","open_championship_2017", "us_open_2017", "masters_2017"],
+	"tournaments":["masters_2018", "pga_championship_2017","open_championship_2017", "us_open_2017", "masters_2017"],
 	"teams":[
 		{
 			"Name":"Weston",
