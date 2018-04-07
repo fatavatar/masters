@@ -192,8 +192,7 @@ function getConfig(req) {
 function isOver(leaderboard) {
 
     if (leaderboard.state === "Official") {
-        endDate = moment(leaderboard.endDate, "MM/DD/YYYY");
-        if (moment().isAfter(endDate)) {
+        if (leaderboard.roundTotal === leaderboard.currentRound) {
             return true;
         }
     }
