@@ -3,6 +3,7 @@ var fs = require('fs');
 var path = require('path');
 var app = express();
 var http = require('http');
+var moment = require('moment');
 // var favicon = require('serve-favicon'):
 
 function getDirectories(path) {
@@ -116,13 +117,6 @@ function setupTeams(currentTourney, config) {
     console.log("Number of teams: " + currentTourney.teams.length);
     for(var i = 0, len = currentTourney.teams.length; i < len; i++) {
         var thisTeam = {};
-        for (var j = 0, len2 = config.teams.length; j < len2; j++) {
-            var configTeam = config.teams[j];
-            if (configTeam.Name === currentTourney.teams[i].Name) {
-                thisTeam.record = configTeam.Wins + "-" + configTeam.Loses + "-" + configTeam.Ties;
-                thisTeam.winnings = configTeam.Winnings
-            }
-        }
         thisTeam.purse = 0;
         thisTeam.name = currentTourney.teams[i]["Name"];
         thisTeam.players = [];
@@ -146,6 +140,7 @@ function setupTeams(currentTourney, config) {
         thisTeam.purse = (thisTeam.purse/100.0) * currentTourney.purse;
         currentTourney.standings.push(thisTeam);
     }
+
     currentTourney.standings.sort(function(a,b) {
         if (a.purse < b.purse) {
             return 1;
@@ -161,17 +156,18 @@ function setupTeams(currentTourney, config) {
 function getConfig(req) {
     var tourneys = [];
     var jsondir = __dirname + "/json";
-    var currentTourneyName = null;
-    config = readJsonFileSync(path.join(jsondir, "config.json"));
+    config = {}
     purse = readJsonFileSync(path.join(jsondir, "purse.json"));
     config.purse = purse.purse;
+    config.currentTourney = null;
+    currentTourneyName = null;
 
-    if (config.tournaments.indexOf(req.params.tourney) != -1) {
+    if ("tourney" in req.params) {
         currentTourneyName = req.params.tourney + "_" + req.params.year;
     }
 
     getDirectories(__dirname + "/json/tourneys").forEach(function(year) {
-        config.tournaments.forEach(function(tourney) {
+        getDirectories(__dirname + "/json/tourneys/" + year).forEach(function(tourney) {
             console.log("Reading tourney - " + tourney + " " + year);
             tournament = readTourneyData(tourney, year);
             if (tournament != null) {
@@ -181,17 +177,13 @@ function getConfig(req) {
                 tournament.year = year;
 
                 tourneys.push(tournament);
-                if (currentTourneyName == null) {
-                    config.currentTourney = tournament;
-                    config.currentTourney.selected = true;
-                } else if (currentTourneyName === id) {
+                if (currentTourneyName === id) {
                     config.currentTourney = tournament;
                     config.currentTourney.selected = true;
                 }
             }
         });
     });
-
     config.tourneyData = tourneys;
 
     return config;
@@ -294,26 +286,26 @@ app.set('view engine', 'ejs');
 
 app.get('/leaderboard/:year?/:tourney?', function (req, res, next) {
     console.log("Obtaining Leaderboard")
-    config = getConfig(req);
-    config.page = 'leaderboard';
-    currentTourney = config.currentTourney;
-    console.log("Current tourney = " + currentTourney.id);
-    getLeaderboard(currentTourney, function(theTourney) {
-        res.render('pages/leaderboard', {
-            players : theTourney.playerList,
-            config : config
-        });
-    });
-
+    getTourney("leaderboard", req, res, next);
 });
 
-getTourney = function(req, res, next) {
+app.get('/:year?/:tourney?', function(req, res, next) {
     console.log("Obtaining tourney")
+    getTourney("teams", req, res, next);
+});
+app.get('/tourney/:year?/:tourney?', function(req, res, next) {
+    console.log("Obtaining tourney")
+    getTourney("teams", req, res, next);
+});
+
+app.listen(app.get('port'), function() {
+  console.log('Node app is running on port', app.get('port'));
+});
+
+
+getTourney = function(page, req, res, next) {
     config = getConfig(req);
-    config.page = 'teams';
-    currentTourney = config.currentTourney;
-    console.log("Current tourney = " + currentTourney.tid);
-    console.log("Current year = " + currentTourney.year);
+    config.page = page;
     config.records = {};
 
     count = config.tourneyData.length;
@@ -324,21 +316,37 @@ getTourney = function(req, res, next) {
             count--;
             console.log("Count = " + count);
             if (count == 0) {
-                res.render('pages/index', {
-                    teams: currentTourney.standings,
-                    config: config
+
+                config.tourneyData.sort(function(a,b) {
+                    startA = moment(a.leaderboard.startDate, "MM/DD/YYYY");
+                    startB = moment(b.leaderboard.startDate, "MM/DD/YYYY");
+                    if (startA.isBefore(startB)) {
+                        return 1;
+                    }
+                    if (startA.isAfter(startB)) {
+                        return -1;
+                    }
+                    return 0;
                 });
+
+                if (config.currentTourney == null) {
+                    config.currentTourney = config.tourneyData[0];
+                }
+
+                if (page === "teams") {
+                    res.render('pages/index', {
+                        teams: config.currentTourney.standings,
+                        config: config
+                    });
+                } else if (page === "leaderboard") {
+                    res.render('pages/leaderboard', {
+                        players : config.currentTourney.playerList,
+                        config : config
+                    });
+                }
             }
         });
     });
 }
-
-
-app.get('/tourney/:year?/:tourney?', getTourney);
-app.get('/:year?/:tourney?', getTourney);
-
-app.listen(app.get('port'), function() {
-  console.log('Node app is running on port', app.get('port'));
-});
 
 
