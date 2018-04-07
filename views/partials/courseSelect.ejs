@@ -5,12 +5,12 @@
 <strong><label class="form-label" style="margin-right:15px">Select Major:</label></strong>
 <select id="courseSelect" class="form-control" for="courseSelect">
 <% 
-config.tournaments.forEach(function(major) { 
+config.tourneyData.forEach(function(major) { 
 %>
-<option value="<%= major %>" <% 
-if (config.tourneyData[major].selected) { 
+<option value="<%= major.year + "/" + major.tid %>" <% 
+if (major.selected) { 
 %> selected <% 
-} %> > <%= config.tourneyData[major].name %></option>
+} %> > <%= major.name + " " + major.year %></option>
 <% }); %>
 </select>
 </form>
@@ -18,10 +18,10 @@ if (config.tourneyData[major].selected) {
 </div>
 <div class="col-6 text-right" style="font-size:14px;">
 <% if (config.page !== 'teams') { 
-%> <a href="/tourney/<%= config.currentTourney.id %>">Teams</a>
+%> <a href="/tourney/<%= config.currentTourney.year + "/" + config.currentTourney.tid %>">Teams</a>
 <% } else { %> Teams <% } 
 %> | <% if (config.page !== 'leaderboard') { 
-%> <a href="/leaderboard/<%= config.currentTourney.id %>">Leaderboard</a>
+%> <a href="/leaderboard/<%= config.currentTourney.year + "/" + config.currentTourney.tid %>">Leaderboard</a>
 <% } else { %> Leaderboard <% } 
 %> 
 </div>

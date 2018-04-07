@@ -44,8 +44,10 @@ function readJsonFileSync(filepath, encoding){
 
 function getLeaderFile(tourney) {
     var jsonDir = path.join(__dirname, "json");
+    jsonDir = path.join(jsonDir, "tourneys");
     var directory = path.join(jsonDir, tourney);
-    var tmpdir = path.join("/tmp", tourney );
+    var tmpdir = path.join("/tmp", "json");
+    tmpdir = path.join(tmpdir, tourney);
     var leaderfile = path.join(directory, "leaderboard.json");
     var tmpLeaderFile = path.join(tmpdir, "leaderboard.json");
     if (fs.existsSync(leaderfile)) {
@@ -62,9 +64,9 @@ function getLeaderFile(tourney) {
 function readTourneyData(tourney, year) {
     try {
         var jsonDir = path.join(__dirname, "json");
-        jsonDir = path.join(jsonDir, "tourney");
-        jsonDir = path.join(jsonDir, year);
-        var directory = path.join(jsonDir, tourney);
+        jsonDir = path.join(jsonDir, "tourneys");
+        tourneyDir = path.join(year, tourney);
+        var directory = path.join(jsonDir, tourneyDir);
         var teamfile = path.join(directory, "teams.json");
         teams = readJsonFileSync(teamfile);
         var coursefile = path.join(directory, "course.json");
@@ -72,15 +74,21 @@ function readTourneyData(tourney, year) {
         var leaderfile = path.join(directory, "leaderboard.json");
         var courseInfo = {}
 
-        course.leaderboard = getLeaderFile(directory)
+        course.leaderboard = getLeaderFile(tourneyDir)
         course.teams = teams.teams;
         return course;
     } catch (err) {
+        console.log(err);
         return null;
     }
 }
 
-function parseLeaderboardPga(leaderboard, players, playerList, ties) {
+function parseLeaderboardPga(tourney) {
+    leaderboard = tourney.leaderboard;
+    tourney.playerList = [];
+    tourney.ties = {};
+    tourney.players = {};
+
     for (var i = 0, len = leaderboard["player"].length; i < len; i++) {
         var jsonPlayer = leaderboard["player"][i];
         var player = {};
@@ -89,19 +97,22 @@ function parseLeaderboardPga(leaderboard, players, playerList, ties) {
         player["thru"] = jsonPlayer["thru"].length <= 2 ? "thru " + jsonPlayer["thru"] : jsonPlayer["thru"];
         player["total"] = jsonPlayer["totalParRelative"];
         player["today"] = jsonPlayer["currentParRelative"] === "-" ? "0" : jsonPlayer["currentParRelative"];
-        if (ties[player["position"]] === undefined) {
-            ties[player["position"]] = 0;
+        if (tourney.ties[player["position"]] === undefined) {
+            tourney.ties[player["position"]] = 0;
         }
-        ties[player["position"]]++;
+        tourney.ties[player["position"]]++;
 
-        players[jsonPlayer["id"]] = player;
-        playerList.push(player);
+        tourney.players[jsonPlayer["id"]] = player;
+        tourney.playerList.push(player);
     }
 }
 
 
-function setupTeams(currentTourney, config, teams, players, ties) {
+function setupTeams(currentTourney, config) {
 
+    players = currentTourney.players;
+    ties = currentTourney.ties;
+    currentTourney.standings = [];
     console.log("Number of teams: " + currentTourney.teams.length);
     for(var i = 0, len = currentTourney.teams.length; i < len; i++) {
         var thisTeam = {};
@@ -133,9 +144,9 @@ function setupTeams(currentTourney, config, teams, players, ties) {
                 }
         }
         thisTeam.purse = (thisTeam.purse/100.0) * currentTourney.purse;
-        teams.push(thisTeam);
+        currentTourney.standings.push(thisTeam);
     }
-    teams.sort(function(a,b) {
+    currentTourney.standings.sort(function(a,b) {
         if (a.purse < b.purse) {
             return 1;
         }
@@ -148,42 +159,48 @@ function setupTeams(currentTourney, config, teams, players, ties) {
 }
 
 function getConfig(req) {
-    var tourneys = {}
+    var tourneys = [];
     var jsondir = __dirname + "/json";
-    var currentTourneyName = "";
+    var currentTourneyName = null;
     config = readJsonFileSync(path.join(jsondir, "config.json"));
     purse = readJsonFileSync(path.join(jsondir, "purse.json"));
     config.purse = purse.purse;
+
+    if (config.tournaments.indexOf(req.params.tourney) != -1) {
+        currentTourneyName = req.params.tourney + "_" + req.params.year;
+    }
 
     getDirectories(__dirname + "/json/tourneys").forEach(function(year) {
         config.tournaments.forEach(function(tourney) {
             console.log("Reading tourney - " + tourney + " " + year);
             tournament = readTourneyData(tourney, year);
-            if (tournament == null) {
-                return
-            }
-            tournament.selected = false;
-            tournament.id = tourney + "_" + year;
+            if (tournament != null) {
+                tournament.selected = false;
+                id = tourney + "_" + year;
+                tournament.tid = tourney;
+                tournament.year = year;
 
-            tourneys[tournament.id] = tournament;
-            currentTourneyName = tournament.id;
+                tourneys.push(tournament);
+                if (currentTourneyName == null) {
+                    config.currentTourney = tournament;
+                    config.currentTourney.selected = true;
+                } else if (currentTourneyName === id) {
+                    config.currentTourney = tournament;
+                    config.currentTourney.selected = true;
+                }
+            }
         });
     });
-    if (config.tournaments.indexOf(req.params.tourney) != -1) {
-        currentTourneyName = req.params.tourney + "_" + req.params.year;
-    }
-    console.log("Current Tourney = " + currentTourneyName);
 
     config.tourneyData = tourneys;
-    config.currentTourney = config.tourneyData[currentTourneyName];
-    config.currentTourney.selected = true;
 
     return config;
 }
 
-function archiveIfNeededPga(tourney, leaderboard) {
+function archiveIfNeededPga(tourney, year, leaderboard) {
     var jsondir = "/tmp/json";
-    var toPath = path.join(jsondir, tourney);
+    var toPath = path.join(jsondir, year);
+    var toPath = path.join(toPath, tourney);
     if (!fs.existsSync(toPath)){
         mkDirByPathSync(toPath, false);
     }
@@ -198,9 +215,6 @@ function archiveIfNeededPga(tourney, leaderboard) {
 }
 
 function getLeaderboard(currentTourney, callback) {
-    var players = {};
-    var playerList = [];
-    var ties = {};
     if (currentTourney.leaderboard == null) {
         console.log("Remote fetching Leaderboard - " + currentTourney.leaderboardURL);
         var body = "";
@@ -214,16 +228,58 @@ function getLeaderboard(currentTourney, callback) {
                 leaderboard = JSON.parse(body);
                 // check for this being over.
                 currentTourney.leaderboard = leaderboard;
-                archiveIfNeededPga(currentTourney.id, leaderboard);
-                parseLeaderboardPga(leaderboard, players, playerList, ties);
-                callback(players, playerList, ties);
+                archiveIfNeededPga(currentTourney.tid, currentTourney.year, leaderboard);
+                parseLeaderboardPga(currentTourney);
+                callback(currentTourney);
             });
 
         });
     }
     else {
-        parseLeaderboardPga(currentTourney.leaderboard, players, playerList, ties);
-        callback(players, playerList, ties);
+        parseLeaderboardPga(currentTourney);
+        callback(currentTourney);
+    }
+}
+
+updateRecords = function(tourney, config) {
+    if (!(tourney.year in config.records)) {
+        config.records[tourney.year] = {};
+    }
+    records = config.records[tourney.year];
+    tourney.standings.forEach(function(team) {
+        if (!( team.name in records)) {
+            records[team.name] = {}
+            teamRecord = records[team.name];
+            teamRecord.wins = 0;
+            teamRecord.losses = 0;
+            teamRecord.ties = 0;
+            teamRecord.name = team.name;
+            teamRecord.winnings = 0;
+        }
+    });
+    if (tourney.leaderboard.state === "Official") {
+        purse = tourney.standings[0].purse;
+        winners = 0;
+        tourney.standings.forEach(function(team) {
+            if (purse == team.purse) {
+                winners++;
+            }
+        });
+
+        tourney.standings.forEach(function(team) {
+            teamRecord = records[team.name];
+            if (team.purse == purse) {
+                if (winners > 1) {
+                    teamRecord.ties++;
+                } else {
+                    teamRecord.wins++;
+                }
+                teamRecord.winnings += 20 * (tourney.standings.length - winners) / winners;
+            } else {
+                teamRecord.losses++;
+                teamRecord.winnings -= 20;
+            }
+        });
     }
 }
 
@@ -242,9 +298,9 @@ app.get('/leaderboard/:year?/:tourney?', function (req, res, next) {
     config.page = 'leaderboard';
     currentTourney = config.currentTourney;
     console.log("Current tourney = " + currentTourney.id);
-    getLeaderboard(currentTourney, function(players, playerList, ties) {
+    getLeaderboard(currentTourney, function(theTourney) {
         res.render('pages/leaderboard', {
-            players : playerList,
+            players : theTourney.playerList,
             config : config
         });
     });
@@ -256,13 +312,23 @@ getTourney = function(req, res, next) {
     config = getConfig(req);
     config.page = 'teams';
     currentTourney = config.currentTourney;
-    console.log("Current tourney = " + currentTourney.id);
-    var teams = [];
-    getLeaderboard(currentTourney, function(players, playerList, ties) {
-        setupTeams(currentTourney, config, teams, players, ties);
-        res.render('pages/index', {
-            teams: teams ,
-            config: config
+    console.log("Current tourney = " + currentTourney.tid);
+    console.log("Current year = " + currentTourney.year);
+    config.records = {};
+
+    count = config.tourneyData.length;
+    config.tourneyData.forEach(function(tourney) {
+        getLeaderboard(tourney, function(theTourney) {
+            setupTeams(theTourney, config);
+            updateRecords(theTourney, config);
+            count--;
+            console.log("Count = " + count);
+            if (count == 0) {
+                res.render('pages/index', {
+                    teams: currentTourney.standings,
+                    config: config
+                });
+            }
         });
     });
 }

@@ -9,12 +9,13 @@
 <%- include('../partials/courseSelect', {config : config }); %>
 <% teams.forEach(function(team) { %>
 	<div class="row">
-	<div class="col-8" style="border-bottom: 1px solid #ccc;margin-bottom:1em;">
-	<h4> <%= team.name %> <span style="color:#AAAAAA;"> (<%= team.record %>) </span> </h4>
+    <div class="col-8" style="border-bottom: 1px solid #ccc;margin-bottom:1em;">
+  <% record = config.records[config.currentTourney.year][team.name]; %>
+	<h4> <%= team.name %> <span style="color:#AAAAAA;"> (<%= record.wins + "-" + record.losses + "-" + record.ties %>) </span> </h4>
 	</div>
 	
 	<div class="col-4" style="border-bottom: 1px solid #ccc;margin-bottom:1em;">
-	<em style="color:#999999;">Winnings: $<%= team.winnings %></em>
+	<em style="color:#999999;">Winnings: $<%= record.winnings %></em>
 	</div>
 	</div>
 	<% team.players.forEach(function(player)  {  %>
