@@ -193,7 +193,7 @@ function isOver(leaderboard) {
 
     if (leaderboard.state === "Official") {
         endDate = moment(leaderboard.endDate, "MM/DD/YYYY");
-        if (endDate.isAfter(moment.now())) {
+        if (moment().isAfter(endDate)) {
             return true;
         }
     }
