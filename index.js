@@ -189,6 +189,17 @@ function getConfig(req) {
     return config;
 }
 
+function isOver(leaderboard) {
+
+    if (leaderboard.state === "Official") {
+        endDate = moment(leaderboard.endDate, "MM/DD/YYYY");
+        if (endDate.isAfter(moment.now())) {
+            return true;
+        }
+    }
+    return false;
+}
+
 function archiveIfNeededPga(tourney, year, leaderboard) {
     var jsondir = "/tmp/json";
     var toPath = path.join(jsondir, year);
@@ -198,10 +209,9 @@ function archiveIfNeededPga(tourney, year, leaderboard) {
     }
 
     toPath = path.join(toPath, "leaderboard.json");
-    if (leaderboard.state === "Official") {
+    if (isOver(leaderboard)) {
         console.log("Saving leaderboard");
         var jsonString = JSON.stringify(leaderboard, null, 2);
-
         fs.writeFileSync(toPath, jsonString);
     }
 }
@@ -249,7 +259,7 @@ updateRecords = function(tourney, config) {
             teamRecord.winnings = 0;
         }
     });
-    if (tourney.leaderboard.state === "Official") {
+    if (isOver(tourney.leaderboard)) {
         purse = tourney.standings[0].purse;
         winners = 0;
         tourney.standings.forEach(function(team) {
