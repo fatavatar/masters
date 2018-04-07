@@ -5,7 +5,11 @@ var app = express();
 var http = require('http');
 // var favicon = require('serve-favicon'):
 
-// app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')))
+function getDirectories(path) {
+  return fs.readdirSync(path).filter(function (file) {
+      return fs.statSync(path+'/'+file).isDirectory();
+    });
+}
 
 function mkDirByPathSync(targetDir, isRelativeToScript) {
   const sep = path.sep;
@@ -55,19 +59,25 @@ function getLeaderFile(tourney) {
     return null;
 }
 
-function readTourneyData(tourney) {
-    var jsonDir = path.join(__dirname, "json");
-    var directory = path.join(jsonDir, tourney);
-    var teamfile = path.join(directory, "teams.json");
-    teams = readJsonFileSync(teamfile);
-    var coursefile = path.join(directory, "course.json");
-    course = readJsonFileSync(coursefile);
-    var leaderfile = path.join(directory, "leaderboard.json");
-    var courseInfo = {}
+function readTourneyData(tourney, year) {
+    try {
+        var jsonDir = path.join(__dirname, "json");
+        jsonDir = path.join(jsonDir, "tourney");
+        jsonDir = path.join(jsonDir, year);
+        var directory = path.join(jsonDir, tourney);
+        var teamfile = path.join(directory, "teams.json");
+        teams = readJsonFileSync(teamfile);
+        var coursefile = path.join(directory, "course.json");
+        course = readJsonFileSync(coursefile);
+        var leaderfile = path.join(directory, "leaderboard.json");
+        var courseInfo = {}
 
-    course.leaderboard = getLeaderFile(directory)
-    course.teams = teams.teams;
-    return course;
+        course.leaderboard = getLeaderFile(directory)
+        course.teams = teams.teams;
+        return course;
+    } catch (err) {
+        return null;
+    }
 }
 
 function parseLeaderboardPga(leaderboard, players, playerList, ties) {
@@ -140,24 +150,30 @@ function setupTeams(currentTourney, config, teams, players, ties) {
 function getConfig(req) {
     var tourneys = {}
     var jsondir = __dirname + "/json";
+    var currentTourneyName = "";
     config = readJsonFileSync(path.join(jsondir, "config.json"));
     purse = readJsonFileSync(path.join(jsondir, "purse.json"));
     config.purse = purse.purse;
 
-    if (config.tournaments.indexOf(req.params.tourney) != -1) {
-        currentTourneyName = req.params.tourney;
-    }
-    else {
-        currentTourneyName = config.tournaments[0];
-    }
-    config.tournaments.forEach(function(tourney) {
-        console.log("Reading tourney - " + tourney);
-        tournament = readTourneyData(tourney);
-        tournament.selected = false;
-        tournament.id = tourney;
+    getDirectories(__dirname + "/json/tourneys").forEach(function(year) {
+        config.tournaments.forEach(function(tourney) {
+            console.log("Reading tourney - " + tourney + " " + year);
+            tournament = readTourneyData(tourney, year);
+            if (tournament == null) {
+                return
+            }
+            tournament.selected = false;
+            tournament.id = tourney + "_" + year;
 
-        tourneys[tourney] = tournament;
+            tourneys[tournament.id] = tournament;
+            currentTourneyName = tournament.id;
+        });
     });
+    if (config.tournaments.indexOf(req.params.tourney) != -1) {
+        currentTourneyName = req.params.tourney + "_" + req.params.year;
+    }
+    console.log("Current Tourney = " + currentTourneyName);
+
     config.tourneyData = tourneys;
     config.currentTourney = config.tourneyData[currentTourneyName];
     config.currentTourney.selected = true;
@@ -220,7 +236,7 @@ app.use(express.static(__dirname + '/public'));
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 
-app.get('/leaderboard/:tourney?', function (req, res, next) {
+app.get('/leaderboard/:year?/:tourney?', function (req, res, next) {
     console.log("Obtaining Leaderboard")
     config = getConfig(req);
     config.page = 'leaderboard';
@@ -252,8 +268,8 @@ getTourney = function(req, res, next) {
 }
 
 
-app.get('/tourney/:tourney?', getTourney);
-app.get('/:tourney?', getTourney);
+app.get('/tourney/:year?/:tourney?', getTourney);
+app.get('/:year?/:tourney?', getTourney);
 
 app.listen(app.get('port'), function() {
   console.log('Node app is running on port', app.get('port'));
