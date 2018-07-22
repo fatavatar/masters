@@ -129,8 +129,8 @@ function setupTeams(currentTourney, config) {
 
             var rank = parseInt(position.replace('T', ''));
             var player_purse = 0
-                if (rank <= 60) {
-                    for (var x = 0; x < numTies && (x + rank) < 60; x++) {
+                if (rank <= 70) {
+                    for (var x = 0; x < numTies && (x + rank) < 70; x++) {
 
                         player_purse += config.purse[rank + x - 1];
                     }
