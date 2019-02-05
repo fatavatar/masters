@@ -4,18 +4,19 @@
   <% include ../partials/header.ejs %>
 </head>
 
-<body>
-<div class="container" style="margin-top: 1em;">
-<%- include('../partials/courseSelect', {config : config }); %>
+<body class="mdc-typography">
+		<%- include('../partials/courseSelect', {config : config }); %>
+<div class=" container mdc-layout-grid" ">
+
 <% players.forEach(function(player) { %>
-	<div class="row">
-	<div class="col-5">
+	<div class="mdc-layout-grid__inner">
+	<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-5-desktop mdc-layout-grid__cell--span-5-tablet mdc-layout-grid__cell--span-2-phone">
 		<%= player.name %>
 	</div>
-	<div class="col-3">
+	<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-3-desktop mdc-layout-grid__cell--span-1-tablet mdc-layout-grid__cell--span-1-phone" style="text-align:right">
 		<%= player.total %> (<%= player.today %>)
 	</div>
-	<div class="col-4">
+	<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-4-desktop mdc-layout-grid__cell--span-2-tablet mdc-layout-grid__cell--span-1-phone" style="text-align:right">
 		<%= player.position %> <%= player.thru %>
 	</div>
 	</div>
