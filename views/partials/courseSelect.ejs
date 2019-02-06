@@ -1,3 +1,32 @@
+<div class="mdc-tab-bar" role="tablist">
+  <div class="mdc-tab-scroller">
+    <div class="mdc-tab-scroller__scroll-area">
+      <div class="mdc-tab-scroller__scroll-content">
+        <button class="mdc-tab mdc-tab--active" role="tab" aria-selected="true" tabindex="0">
+          <span class="mdc-tab__content">
+            <span class="mdc-tab__icon material-icons" aria-hidden="true">supervisor_account</span>
+            <span class="mdc-tab__text-label">Teams</span>
+          </span>
+          <span class="mdc-tab-indicator mdc-tab-indicator--active">
+            <span class="mdc-tab-indicator__content mdc-tab-indicator__content--underline"></span>
+          </span>
+          <span class="mdc-tab__ripple"></span>
+				</button>
+				<button class="mdc-tab" role="tab" aria-selected="true" tabindex="0">
+          <span class="mdc-tab__content">
+            <span class="mdc-tab__icon material-icons" aria-hidden="true">list</span>
+            <span class="mdc-tab__text-label">Leaderboard</span>
+          </span>
+          <span class="mdc-tab-indicator">
+            <span class="mdc-tab-indicator__content mdc-tab-indicator__content--underline"></span>
+          </span>
+          <span class="mdc-tab__ripple"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="row" style="margin-bottom: 20px">
 <div class="col-6">
 <form class="form-inline">
@@ -26,6 +55,7 @@ if (major.selected) {
 %> 
 </div>
 </div>
+
 <script>
 document.getElementById("courseSelect").onchange = function(){
 	<% if (config.page === 'teams') { %>
